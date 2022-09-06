@@ -1,36 +1,32 @@
 import classes from "./AvailableMeals.module.css";
 import Card from "../UI/Card";
 import MealItem from "./MealItem/MealItem";
-
-const DUMMY_MEALS = [
-  {
-    id: "m1",
-    name: "Sushi",
-    description: "Finest fish and veggies",
-    price: 22.99,
-  },
-  {
-    id: "m2",
-    name: "Schnitzel",
-    description: "A german specialty!",
-    price: 16.5,
-  },
-  {
-    id: "m3",
-    name: "Barbecue Burger",
-    description: "American, raw, meaty",
-    price: 12.99,
-  },
-  {
-    id: "m4",
-    name: "Green Bowl",
-    description: "Healthy...and green...",
-    price: 18.99,
-  },
-];
+import { useEffect, useState } from "react";
 
 const AvailableMeals = () => {
-  const mealsList = DUMMY_MEALS.map((meal) => (
+  const [mealsData, setMealsData] = useState([]);
+  const fetchMealsHandler = async () => {
+    const mealsDataArr = [];
+    const response = await fetch(
+      "https://react-course-http-69006-default-rtdb.firebaseio.com/meals.json"
+    );
+    const mealsDataObj = await response.json();
+    for (const key in mealsDataObj) {
+      let item = {
+        id: key,
+        name: mealsDataObj[key].name,
+        description: mealsDataObj[key].description,
+        price: mealsDataObj[key].price,
+      };
+      mealsDataArr.push(item);
+    }
+    setMealsData(mealsDataArr);
+  };
+
+  useEffect(() => {
+    fetchMealsHandler();
+  }, []);
+  const mealsList = mealsData.map((meal) => (
     <MealItem
       id={meal.id}
       key={meal.id}
