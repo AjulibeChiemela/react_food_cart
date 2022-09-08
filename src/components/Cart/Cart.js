@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import React, { useContext, useState } from "react";
 import CartContext from "../../store/cart-context";
 import Modal from "../UI/Modal";
 import classes from "./Cart.module.css";
@@ -7,6 +7,8 @@ import Checkout from "./Checkout";
 
 const Cart = (props) => {
   const [showCheckout, setShowCheckout] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [didSubmit, setDidSubmit] = useState(false);
   const cartCtx = useContext(CartContext);
   const totalAmount = `$${cartCtx.totalAmount.toFixed(2)}`;
   const cartHasItems = cartCtx.items.length > 0;
@@ -36,7 +38,8 @@ const Cart = (props) => {
   );
 
   const submitOrderHandler = async (userData) => {
-    const response = await fetch(
+    setIsSubmitting(true);
+    await fetch(
       "https://react-course-http-69006-default-rtdb.firebaseio.com/orders.json",
       {
         method: "POST",
@@ -46,10 +49,13 @@ const Cart = (props) => {
         }),
       }
     );
+    setIsSubmitting(false);
+    setDidSubmit(true);
+    cartCtx.clearCart();
   };
 
-  return (
-    <Modal onClick={props.onHideCart}>
+  const cartModalContent = (
+    <React.Fragment>
       {cartItems}
       <div className={classes.total}>
         <span>Total Amount</span>
@@ -70,6 +76,27 @@ const Cart = (props) => {
           )}
         </div>
       )}
+    </React.Fragment>
+  );
+
+  const submittingModalContent = <p>Sending your order..</p>;
+
+  const didSubmitModalContent = (
+    <React.Fragment>
+      <p>Your order has been sent to our chef!</p>
+      <div className={classes.actions}>
+        <button className={classes.button} onClick={props.onHideCart}>
+          Close
+        </button>
+      </div>
+    </React.Fragment>
+  );
+
+  return (
+    <Modal onClick={props.onHideCart}>
+      {!isSubmitting && !didSubmit && cartModalContent}
+      {isSubmitting && !didSubmit && submittingModalContent}
+      {!isSubmitting && didSubmit && didSubmitModalContent}
     </Modal>
   );
 };
